@@ -1,0 +1,280 @@
+﻿Virtual Box:
+官網
+https://www.virtualbox.org/wiki/Downloads
+下載
+VirtualBox binaries
+VirtualBox 5.2.0 platform packages.
+Windows hosts
+http://download.virtualbox.org/virtualbox/5.2.0/VirtualBox-5.2.0-118431-Win.exe
+
+--------------------------------------------------------------------------------
+
+Ubuntu:
+官網
+https://www.ubuntu-tw.org/modules/tinyd0/
+下載
+Ubuntu 桌面版本
+14.04 LTS（支援至 2019 年 04 月）
+64 位元版本
+http://ubuntu.cs.nctu.edu.tw/ubuntu-cd/14.04.5/ubuntu-14.04.5-desktop-amd64.iso
+
+--------------------------------------------------------------------------------
+
+共用資料夾
+$sudo gedit /etc/group
+vboxsf:x:125:hduser
+參考
+https://blog.gtwang.org/tips/virtualbox-shared-folder/
+1123
+--------------------------------------------------------------------------------
+
+JAVA
+檢查版本
+$java -version
+安裝
+$sudo apt-get update
+$sudo apt-get install default-jdk
+查詢安裝位置
+$update-alternatives --display java
+位置
+/usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java
+/usr/lib/jvm/java-7-openjdk-amd64
+
+--------------------------------------------------------------------------------
+
+SSH
+安裝
+$sudo apt-get install ssh
+
+RSYNC
+安裝
+$sudo apt-get install rsync
+
+產生SSH KEY
+$ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa
+**注意上方指令('')是2個單引號
+位置
+/home/hduser/.ssh/id_dsa
+/home/hduser/.ssh/id_dsa.pub
+
+放置授權碼
+$cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+
+--------------------------------------------------------------------------------
+
+HADOOP
+官網
+http://hadoop.apache.org/releases.html
+下載
+HADOOP 2.6.5
+http://apache.stu.edu.tw/hadoop/common/hadoop-2.6.5/hadoop-2.6.5.tar.gz
+
+(選擇1)*使用共用資料夾法
+從實體機將檔案下載放置share資料夾
+從虛擬機將檔案移動至家目錄
+$mv hadoop-2.6.5.tar.gz ~/
+
+(選擇2)*從網路下載
+$wget http://ftp.twaren.net/Unix/Web/apache/hadoop/common/hadoop-2.6.5/hadoop-2.6.5.tar.gz
+
+解壓縮
+$sudo tar -zxvf hadoop-2.6.5.tar.gz
+將hadoop資料夾移至/usr/local/hadoop
+$sudo mv hadoop-2.6.5 /usr/local/hadoop
+看一下檔案有沒有正確搬移
+$ll /usr/local/hadoop/
+**注意上方指令(ll)是2個小寫L
+刪除壓縮檔
+$rm hadoop-2.6.5.tar.gz
+
+設定HADOOP環境變數
+$sudo gedit ~/.bashrc
+
+加入以下
+# Hadoop Variable
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export HADOOP_HOME=/usr/local/hadoop
+
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+
+export YARN_HOME=$HADOOP_HOME
+
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+
+export JAVA_LIBRARY_PATH=$HADOOP_HOME/lib/native:$JAVA_LIBRARY_PATH
+# Hadoop Variable
+
+生效
+$source ~/.bashrc
+
+修改Hadoop組態hadoop-env.sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+$sudo gedit /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+修改JAVA路徑
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+
+修改core-site.xml
+$sudo gedit /usr/local/hadoop/etc/hadoop/core-site.xml
+
+加入以下
+<property>
+    <name>fs.default.name</name>
+    <value>hdfs://localhost:9000</value>
+</property>
+
+修改yarn-site.xml
+$sudo gedit /usr/local/hadoop/etc/hadoop/yarn-site.xml
+
+加入以下
+<property>
+   <name>yarn.nodemanager.aux-services</name>
+   <value>mapreduce_shuffle</value>
+</property>
+<property>
+   <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+   <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>
+
+複製樣板&修改mapred-site.xml
+$sudo cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
+$sudo gedit /usr/local/hadoop/etc/hadoop/mapred-site.xml
+
+加入以下
+<property>
+   <name>mapreduce.framework.name</name>
+   <value>yarn</value>
+</property>
+
+複製樣板&修改hdfs-site.xml 
+$sudo gedit /usr/local/hadoop/etc/hadoop/hdfs-site.xml
+
+加入以下
+<property>
+   <name>dfs.replication</name>
+   <value>3</value>
+</property>
+<property>
+   <name>dfs.namenode.name.dir</name>
+   <value> file:/usr/local/hadoop/hadoop_data/hdfs/namenode</value>
+</property>
+<property>
+   <name>dfs.datanode.data.dir</name>
+   <value> file:/usr/local/hadoop/hadoop_data/hdfs/datanode</value>
+</property>
+
+建立NameNode
+$sudo mkdir -p /usr/local/hadoop/hadoop_data/hdfs/namenode
+建立DataNode
+$sudo mkdir -p /usr/local/hadoop/hadoop_data/hdfs/datanode
+將hadoop目錄的擁有者改為hduser
+$sudo chown hduser:hduser -R /usr/local/hadoop
+將HDFS格式化
+$hadoop namenode -format
+
+啟動HDFS
+$start-dfs.sh
+啟動YARN
+$start-yarn.sh
+查看程序
+$jps
+
+
+參考
+http://pythonsparkhadoop.blogspot.tw/
+
+--------------------------------------------------------------------------------
+
+SCALA
+官網
+https://www.scala-lang.org/files/archive/
+下載
+scala-2.11.12.tgz
+$wget https://www.scala-lang.org/files/archive/scala-2.11.12.tgz
+解壓縮
+$tar xvf scala-2.11.12.tgz
+刪除原始檔案
+$sudo mv scala-2.11.12 /usr/local/scala
+
+環境變數
+$sudo gedit ~/.bashrc
+加入以下
+export SCALA_HOME=/usr/local/scala
+export PATH=$PATH:$SCALA_HOME/bin
+
+
+更新.bashrc
+$source ~/.bashrc
+
+
+
+--------------------------------------------------------------------------------
+
+Spark 2.0.2
+官網
+http://spark.apache.org/downloads.html
+下載
+spark 2.0.2
+Pre-built for Apache Hadoop 2.6
+spark-2.0.2-bin-hadoop2.6.tgz
+$wget http://ftp.mirror.tw/pub/apache/spark/spark-2.0.2/spark-2.0.2-bin-hadoop2.6.tgz
+解壓縮
+$tar xvf spark-2.0.2-bin-hadoop2.6.tgz
+刪除原始檔
+$rm spark-2.0.2-bin-hadoop2.6.tgz
+移動資料夾
+$sudo mv spark-2.0.2-bin-hadoop2.6 /usr/local/spark/
+環境變數
+$sudo gedit ~/.bashrc
+加入以下
+export SPARK_HOME=/usr/local/spark
+export PATH=$PATH:$SPARK_HOME/bin
+
+更新.bashrc
+$source ~/.bashrc
+
+啟動Spark
+$pyspark
+
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 2.0.2
+      /_/
+
+Using Python version 2.7.6 (default, Jun 22 2015 17:58:13)
+SparkSession available as 'spark'.
+
+
+-------------------------------------------------------------------------
+Anaconda
+
+export PATH=/home/hduser/anaconda2/bin:$PATH
+export ANACONDA_PATH=/home/hduser/anaconda2
+export PYSPARK_DRIVER_PYTHON=$ANACONDA_PATH/bin/ipython
+export PYSPARK_PYTHON=$ANACONDA_PATH/bin/python
+
+
+
+
+
+
+
